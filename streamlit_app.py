@@ -219,26 +219,35 @@ def sidebar_navigation():
                 options=[
                     "💬 Chat",
                     "📚 Documents",
+                    "📰 News Feeds",
                     "🎨 Image Gen",
                     "📊 Analytics",
                     "⚙️ Settings",
                 ],
-                icons=["chat-dots", "book", "image", "graph-up", "gear"],
+                icons=["chat-dots", "book", "newspaper", "image", "graph-up", "gear"],
                 menu_icon="cast",
                 default_index=0,
                 styles={
                     "container": {
                         "padding": "0!important",
-                        "background-color": "#fafafa",
+                        "background-color": "#2b2b2b",
                     },
                     "icon": {"color": "#ff6b6b", "font-size": "18px"},
                     "nav-link": {
                         "font-size": "16px",
                         "text-align": "left",
                         "margin": "0px",
-                        "--hover-color": "#eee",
+                        "padding": "0.75rem 1rem",
+                        "border-radius": "0.5rem",
+                        "color": "#ffffff",
+                        "background-color": "transparent",
+                        "--hover-color": "#404040",
                     },
-                    "nav-link-selected": {"background-color": "#ff6b6b"},
+                    "nav-link-selected": {
+                        "background-color": "#ff6b6b",
+                        "color": "#ffffff",
+                        "font-weight": "600",
+                    },
                 },
             )
         else:
@@ -251,6 +260,7 @@ def sidebar_navigation():
                 [
                     "💬 Chat",
                     "📚 Documents",
+                    "📰 News Feeds",
                     "🎨 Image Gen",
                     "📊 Analytics",
                     "⚙️ Settings",
@@ -472,6 +482,208 @@ def document_management():
         else:
             st.write("No RSS feeds configured")
             st.info("Add RSS feeds in the Settings page or .env file")
+
+
+def news_feeds_interface():
+    """Real-time news feeds interface with live updates and categorization."""
+    st.title("📰 Real-time News Feeds")
+    st.markdown("Stay updated with the latest news from multiple sources in real-time!")
+
+    # Check RSS configuration
+    if not st.session_state.app.config.rss.feeds:
+        st.warning("⚠️ No RSS feeds configured")
+        st.info(
+            "Add RSS feed URLs in the Settings page or .env file to start receiving real-time news updates."
+        )
+        
+        # Show example feeds
+        with st.expander("📋 Example News Feed URLs"):
+            st.markdown("""
+            **Major News Sources:**
+            - CNN: `https://rss.cnn.com/rss/edition.rss`
+            - BBC: `http://feeds.bbci.co.uk/news/rss.xml`
+            - Reuters: `https://feeds.reuters.com/reuters/topNews`
+            - Guardian: `https://feeds.guardian.co.uk/international/rss`
+            
+            **Technology News:**
+            - TechCrunch: `https://feeds.feedburner.com/TechCrunch`
+            - Reuters Tech: `https://feeds.reuters.com/reuters/technologyNews`
+            
+            **Business News:**
+            - Wall Street Journal: `https://feeds.a.dj.com/rss/RSSWorldNews.xml`
+            - Bloomberg: `https://feeds.bloomberg.com/markets/news.rss`
+            """)
+        return
+
+    # Initialize RSS ingestor if not already done
+    if "rss_ingestor" not in st.session_state:
+        try:
+            from src.ingestion.rss_ingest import RSSIngestor
+            st.session_state.rss_ingestor = RSSIngestor(
+                st.session_state.app.config.rss,
+                st.session_state.app.embedding_service,
+                st.session_state.app.vector_store
+            )
+            st.success("✅ RSS ingestor initialized")
+        except Exception as e:
+            st.error(f"❌ Failed to initialize RSS ingestor: {str(e)}")
+            return
+
+    # Control panel
+    col1, col2, col3 = st.columns([2, 1, 1])
+    
+    with col1:
+        st.subheader("📊 Feed Control Panel")
+    
+    with col2:
+        auto_refresh = st.checkbox("🔄 Auto Refresh", value=False)
+    
+    with col3:
+        if st.button("🔄 Refresh Now"):
+            st.rerun()
+
+    # Feed statistics
+    if hasattr(st.session_state, 'rss_ingestor'):
+        stats = st.session_state.rss_ingestor.stats
+        
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Active Feeds", stats.get("active_feeds", 0))
+        with col2:
+            st.metric("Total Articles", stats.get("total_articles_processed", 0))
+        with col3:
+            st.metric("Errors", stats.get("errors", 0))
+        with col4:
+            last_update = stats.get("last_update")
+            if last_update:
+                st.metric("Last Update", last_update.strftime("%H:%M:%S"))
+            else:
+                st.metric("Last Update", "Never")
+
+    # Tabs for different views
+    tab1, tab2, tab3 = st.tabs(["📰 Live Feed", "📈 Feed Analytics", "⚙️ Feed Settings"])
+    
+    with tab1:
+        st.subheader("🔴 Live News Updates")
+        
+        # Category filter
+        categories = ["All", "General News", "Technology", "Business", "International"]
+        selected_category = st.selectbox("Filter by Category:", categories)
+        
+        # Show selected category
+        if selected_category != "All":
+            st.info(f"📂 Showing articles from: {selected_category}")
+        
+        # Fetch and display recent articles
+        if st.button("📥 Fetch Latest Articles", type="primary"):
+            with st.spinner("Fetching latest news articles..."):
+                try:
+                    # Simulate fetching articles (you'd implement actual fetching here)
+                    import asyncio
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                    
+                    # Placeholder for actual article fetching
+                    st.info("🚧 Live article fetching will be implemented. This shows the RSS feeds are configured and ready.")
+                    
+                    # Show configured feeds
+                    st.write("**Configured News Sources:**")
+                    for i, feed_url in enumerate(st.session_state.app.config.rss.feeds[:10]):  # Show first 10
+                        # Extract feed name from URL
+                        if "cnn.com" in feed_url:
+                            feed_name = "📺 CNN"
+                        elif "bbci.co.uk" in feed_url:
+                            feed_name = "🌍 BBC News"
+                        elif "reuters.com" in feed_url:
+                            feed_name = "📰 Reuters"
+                        elif "techcrunch" in feed_url.lower():
+                            feed_name = "💻 TechCrunch"
+                        elif "bloomberg.com" in feed_url:
+                            feed_name = "💼 Bloomberg"
+                        else:
+                            feed_name = f"📡 Feed {i+1}"
+                        
+                        st.write(f"• {feed_name}: {feed_url}")
+                    
+                    loop.close()
+                    
+                except Exception as e:
+                    st.error(f"❌ Error fetching articles: {str(e)}")
+
+        # Placeholder for article display
+        st.markdown("---")
+        st.info("💡 Articles will appear here once fetching is implemented. The RSS system is ready to ingest from " + 
+                str(len(st.session_state.app.config.rss.feeds)) + " configured news sources.")
+
+    with tab2:
+        st.subheader("📈 Feed Analytics")
+        
+        # Create sample analytics charts
+        if hasattr(st.session_state, 'rss_ingestor') and st.session_state.rss_ingestor.stats.get("articles_per_feed"):
+            import plotly.express as px
+            
+            # Articles per feed chart
+            feed_data = st.session_state.rss_ingestor.stats.get("articles_per_feed", {})
+            if feed_data:
+                fig = px.bar(
+                    x=list(feed_data.keys()),
+                    y=list(feed_data.values()),
+                    title="Articles per Feed",
+                    labels={"x": "RSS Feed", "y": "Article Count"}
+                )
+                st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("📊 Analytics will appear here once articles are processed.")
+
+    with tab3:
+        st.subheader("⚙️ Feed Configuration")
+        
+        # Display current configuration
+        st.write("**Current RSS Configuration:**")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.metric("Total Feeds", len(st.session_state.app.config.rss.feeds))
+            st.metric("Refresh Interval", f"{st.session_state.app.config.rss.refresh_interval}s")
+        
+        with col2:
+            st.metric("Max Articles per Feed", st.session_state.app.config.rss.max_articles_per_feed)
+        
+        # Show all configured feeds
+        st.write("**All Configured Feeds:**")
+        for i, feed in enumerate(st.session_state.app.config.rss.feeds):
+            with st.expander(f"Feed {i+1}: {feed[:50]}..."):
+                st.code(feed, language="text")
+                
+                # Test feed button
+                if st.button(f"🧪 Test Feed {i+1}", key=f"test_feed_{i}"):
+                    with st.spinner(f"Testing feed {i+1}..."):
+                        try:
+                            import aiohttp
+                            import asyncio
+                            
+                            async def test_feed():
+                                async with aiohttp.ClientSession() as session:
+                                    async with session.get(feed, timeout=10) as response:
+                                        return response.status
+                            
+                            loop = asyncio.new_event_loop()
+                            asyncio.set_event_loop(loop)
+                            status = loop.run_until_complete(test_feed())
+                            loop.close()
+                            
+                            if status == 200:
+                                st.success(f"✅ Feed {i+1} is accessible (Status: {status})")
+                            else:
+                                st.warning(f"⚠️ Feed {i+1} returned status: {status}")
+                        except Exception as e:
+                            st.error(f"❌ Feed {i+1} test failed: {str(e)}")
+
+    # Auto-refresh logic
+    if auto_refresh:
+        import time
+        time.sleep(5)  # Wait 5 seconds
+        st.rerun()
 
 
 def image_generation_interface():
@@ -706,7 +918,7 @@ def image_generation_interface():
             if st.button("🗑️ Clear Image Cache"):
                 st.session_state.image_generator.clear_cache()
                 st.success("✅ Image cache cleared!")
-                st.experimental_rerun()
+                st.rerun()
 
 
 def analytics_dashboard():
@@ -963,6 +1175,33 @@ def main():
             background-color: #2b2b2b;
         }
         
+        /* Additional sidebar selectors for different Streamlit versions */
+        .stSidebar {
+            background-color: #2b2b2b !important;
+        }
+        
+        .stSidebar > div {
+            background-color: #2b2b2b !important;
+        }
+        
+        .css-1lcbmhc {
+            background-color: #2b2b2b !important;
+        }
+        
+        .css-17eq0hr {
+            background-color: #2b2b2b !important;
+        }
+        
+        /* Sidebar text styling */
+        .stSidebar .stMarkdown, .stSidebar .stTitle, .stSidebar p, .stSidebar h1, .stSidebar h2, .stSidebar h3 {
+            color: #ffffff !important;
+        }
+        
+        /* Sidebar divider styling */
+        .stSidebar hr {
+            border-color: #606060 !important;
+        }
+        
         /* Sidebar navigation styling */
         .nav-link {
             display: flex !important;
@@ -1002,15 +1241,25 @@ def main():
         }
         
         /* Improve selectbox styling when option-menu is not available */
-        .stSelectbox > div > div {
-            background-color: #404040;
-            color: #ffffff;
-            border: 1px solid #606060;
-            border-radius: 0.5rem;
+        .stSidebar .stSelectbox > div > div {
+            background-color: #404040 !important;
+            color: #ffffff !important;
+            border: 1px solid #606060 !important;
+            border-radius: 0.5rem !important;
         }
         
-        .stSelectbox > div > div:hover {
-            border-color: #ff6b6b;
+        .stSidebar .stSelectbox > div > div:hover {
+            border-color: #ff6b6b !important;
+        }
+        
+        .stSidebar .stSelectbox label {
+            color: #ffffff !important;
+        }
+        
+        /* Dropdown options styling */
+        .stSidebar .stSelectbox [data-baseweb="select"] > div {
+            background-color: #404040 !important;
+            color: #ffffff !important;
         }
         
         /* Footer styling in sidebar */
@@ -1066,6 +1315,8 @@ def main():
         chat_interface()
     elif selected_page == "📚 Documents":
         document_management()
+    elif selected_page == "📰 News Feeds":
+        news_feeds_interface()
     elif selected_page == "🎨 Image Gen":
         image_generation_interface()
     elif selected_page == "📊 Analytics":

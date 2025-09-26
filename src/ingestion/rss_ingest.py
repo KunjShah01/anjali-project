@@ -1,5 +1,5 @@
 """
-RSS feed ingestion for the Real-time RAG system.
+RSS feed ingestion for the Real-time RAG system with comprehensive news sources.
 """
 
 import asyncio
@@ -17,7 +17,7 @@ from ..utils.logger import LoggerMixin, ContextLogger
 
 @dataclass
 class RSSArticle:
-    """Represents an RSS article."""
+    """Represents an RSS article with enhanced metadata."""
 
     title: str
     content: str
@@ -25,12 +25,14 @@ class RSSArticle:
     published_date: Optional[datetime]
     article_id: str
     feed_url: str
+    feed_name: str
+    category: str
     metadata: Dict[str, Any]
 
 
 class RSSIngestor(LoggerMixin):
     """
-    RSS feed ingestor with real-time monitoring capabilities.
+    RSS feed ingestor with real-time monitoring capabilities for news sources.
     """
 
     def __init__(self, config: RSSConfig, embedding_service=None, vector_store=None):
@@ -45,13 +47,44 @@ class RSSIngestor(LoggerMixin):
         self.last_updated: Dict[str, datetime] = {}
         self._stop_monitoring = False
 
+        # Feed metadata for better categorization
+        self.feed_metadata = self._initialize_feed_metadata()
+
         # Statistics
         self.stats = {
             "total_articles_processed": 0,
             "articles_per_feed": {},
+            "articles_per_category": {},
             "last_update": None,
             "errors": 0,
+            "active_feeds": len(self.config.feeds),
         }
+
+    def _initialize_feed_metadata(self) -> Dict[str, Dict[str, str]]:
+        """Initialize metadata for known news feeds."""
+        return {
+            "rss.cnn.com": {"name": "CNN", "category": "General News"},
+            "feeds.bbci.co.uk": {"name": "BBC News", "category": "General News"},
+            "feeds.reuters.com": {"name": "Reuters", "category": "General News"},
+            "feeds.feedburner.com/ndtvnews": {"name": "NDTV", "category": "General News"},
+            "feeds.a.dj.com": {"name": "Wall Street Journal", "category": "Business"},
+            "aljazeera.com": {"name": "Al Jazeera", "category": "International"},
+            "feeds.guardian.co.uk": {"name": "The Guardian", "category": "International"},
+            "feeds.npr.org": {"name": "NPR", "category": "General News"},
+            "feeds.foxnews.com": {"name": "Fox News", "category": "General News"},
+            "feeds.feedburner.com/TechCrunch": {"name": "TechCrunch", "category": "Technology"},
+            "feeds.bloomberg.com": {"name": "Bloomberg", "category": "Business"},
+            # Add more as needed
+        }
+
+    def _get_feed_info(self, feed_url: str) -> Dict[str, str]:
+        """Get feed name and category from URL."""
+        for domain, info in self.feed_metadata.items():
+            if domain in feed_url:
+                return info
+        
+        # Default fallback
+        return {"name": "Unknown Feed", "category": "General"}
 
     async def fetch_feed(self, feed_url: str) -> Optional[feedparser.FeedParserDict]:
         """
@@ -105,7 +138,7 @@ class RSSIngestor(LoggerMixin):
                 elif "published" in entry:
                     try:
                         published_date = datetime.fromisoformat(entry["published"])
-                    except:
+                    except Exception:
                         pass
 
                 # Clean content
@@ -113,10 +146,15 @@ class RSSIngestor(LoggerMixin):
                 if not cleaned_content:
                     continue
 
+                # Get feed metadata
+                feed_info = self._get_feed_info(feed_url)
+                
                 # Create metadata
                 metadata = {
                     "source": "rss",
                     "feed_url": feed_url,
+                    "feed_name": feed_info["name"],
+                    "category": feed_info["category"],
                     "original_title": title,
                     "published_date": published_date.isoformat()
                     if published_date
@@ -133,6 +171,8 @@ class RSSIngestor(LoggerMixin):
                     published_date=published_date,
                     article_id=article_id,
                     feed_url=feed_url,
+                    feed_name=feed_info["name"],
+                    category=feed_info["category"],
                     metadata=metadata,
                 )
 
@@ -140,7 +180,7 @@ class RSSIngestor(LoggerMixin):
 
             except Exception as e:
                 self.log_error(
-                    f"Error parsing RSS entry",
+                    "Error parsing RSS entry",
                     error=e,
                     entry_id=entry.get("id", "unknown"),
                 )
@@ -206,7 +246,7 @@ class RSSIngestor(LoggerMixin):
                         yield article
 
                 except Exception as e:
-                    self.log_error(f"Error processing feed", error=e, feed_url=feed_url)
+                    self.log_error("Error processing feed", error=e, feed_url=feed_url)
                     self.stats["errors"] += 1
 
     async def process_article(self, article: RSSArticle) -> List[Dict[str, Any]]:

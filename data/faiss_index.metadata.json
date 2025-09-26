@@ -1,0 +1,15 @@
+{
+  "documents": [],
+  "id_to_index": {},
+  "stats": {
+    "total_documents": 0,
+    "index_size": 0,
+    "last_save": null,
+    "searches_performed": 0,
+    "average_search_time": 0.0
+  },
+  "config": {
+    "dimension": 768,
+    "index_type": "IndexFlatIP"
+  }
+}
