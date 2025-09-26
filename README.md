@@ -1,22 +1,6 @@
 
 
-````markdown
-<p align="center">
-  <img src="docs/banner.png" alt="Real-time RAG Playground Banner" width="800">
-</p>
 
-<h1 align="center">⚡ Real-time RAG Playground ⚡</h1>
-<p align="center">
-  <em>Ingest • Embed • Retrieve • Chat with your data in real-time</em>
-</p>
-
-<p align="center">
-  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
-  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.11+-blue.svg"></a>
-  <a href="https://streamlit.io/"><img src="https://img.shields.io/badge/Streamlit-1.37+-red.svg"></a>
-</p>
-
----
 
 ## 📚 Table of Contents
 - [✨ Features](#-features)
