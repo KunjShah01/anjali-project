@@ -1,13 +1,20 @@
 
+# ⚡ Real-time RAG Playground ⚡
 
+*Ingest • Embed • Retrieve • Chat with your data in real-time*
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.37+-red.svg)](https://streamlit.io/)
+
+---
 
 ## 📚 Table of Contents
 - [✨ Features](#-features)
 - [🏗️ Architecture](#-architecture)
 - [📁 Project Structure](#-project-structure)
 - [🚀 Installation](#-installation)
-- [⚙️ Configuration](#%EF%B8%8F-configuration)
+- [⚙️ Configuration](#-configuration)
 - [💬 Usage](#-usage)
 - [🧪 Testing](#-testing)
 - [🤝 Contributing](#-contributing)
@@ -22,9 +29,7 @@
 |-----------------------------|-----------------|-----------------|----------------|
 | RSS feeds, Google Drive, File System watch | Cleaning, normalization, metadata extraction, intelligent chunking | FAISS (local), Pathway (streaming), easily extensible | Chat UI, Semantic Search, Context-aware answers with citations |
 
-<p align="center">
-  <img src="docs/demo.gif" width="700" alt="Demo">
-</p>
+![Demo](docs/demo.gif)
 
 ---
 
@@ -35,10 +40,10 @@
 
 ```mermaid
 graph LR
-    A[📡 Data Sources<br>(RSS, Drive, Files)] --> B[🔄 Ingestion Layer]
+    A[📡 Data Sources\n(RSS, Drive, Files)] --> B[🔄 Ingestion Layer]
     B --> C[🧹 Preprocessing & Chunking]
     C --> D[🪶 Embedding Generation]
-    D --> E[💾 Vector Store<br>(FAISS / Pathway)]
+    D --> E[💾 Vector Store\n(FAISS / Pathway)]
     E --> F[🤖 Query Layer & LLM]
     F --> G[💬 Streamlit UI / FastAPI API]
 ````
@@ -86,15 +91,10 @@ anjali-project/
 ### Quick Start
 
 ```bash
-# Clone repository
 git clone https://github.com/your-username/real-time-rag-playground.git
 cd real-time-rag-playground
-
-# Configure environment
 cp .env.example .env
 # Edit .env with your API keys and settings
-
-# Build and run with Docker Compose
 docker-compose up --build
 ```
 
@@ -168,12 +168,10 @@ WATCH_EXTENSIONS=.txt,.md,.pdf
 ### API Usage
 
 ```bash
-# Query documents
 curl -X POST "http://localhost:8000/query" \
   -H "Content-Type: application/json" \
   -d '{"query": "your search query", "top_k": 5}'
 
-# Ingest new documents
 curl -X POST "http://localhost:8000/ingest" \
   -H "Content-Type: application/json" \
   -d '{"documents": ["document content here"]}'
@@ -221,11 +219,3 @@ MIT License — see the [LICENSE](LICENSE) file.
 
 ```
 
----
-
-This is **all-in-one, ready-to-paste**.  
-
-If you want, I can also **create a polished PNG architecture diagram** for your README that looks professional and can replace the Mermaid block.  
-
-Do you want me to do that next?
-```
