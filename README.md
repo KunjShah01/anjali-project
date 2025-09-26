@@ -1,5 +1,22 @@
 
 
+````markdown
+<p align="center">
+  <img src="docs/banner.png" alt="Real-time RAG Playground Banner" width="800">
+</p>
+
+<h1 align="center">⚡ Real-time RAG Playground ⚡</h1>
+<p align="center">
+  <em>Ingest • Embed • Retrieve • Chat with your data in real-time</em>
+</p>
+
+<p align="center">
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
+  <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.11+-blue.svg"></a>
+  <a href="https://streamlit.io/"><img src="https://img.shields.io/badge/Streamlit-1.37+-red.svg"></a>
+</p>
+
+---
 
 ## 📚 Table of Contents
 - [✨ Features](#-features)
@@ -21,7 +38,11 @@
 |-----------------------------|-----------------|-----------------|----------------|
 | RSS feeds, Google Drive, File System watch | Cleaning, normalization, metadata extraction, intelligent chunking | FAISS (local), Pathway (streaming), easily extensible | Chat UI, Semantic Search, Context-aware answers with citations |
 
+<p align="center">
+  <img src="docs/demo.gif" width="700" alt="Demo">
+</p>
 
+---
 
 ## 🏗️ Architecture
 
@@ -216,7 +237,11 @@ MIT License — see the [LICENSE](LICENSE) file.
 
 ```
 
+---
 
+This is **all-in-one, ready-to-paste**.  
+
+If you want, I can also **create a polished PNG architecture diagram** for your README that looks professional and can replace the Mermaid block.  
 
 Do you want me to do that next?
 ```
