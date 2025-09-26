@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  real-time-rag:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - RSS_FEEDS=${RSS_FEEDS}
+      - RSS_REFRESH_INTERVAL=${RSS_REFRESH_INTERVAL:-300}
+      - VECTOR_STORE_TYPE=${VECTOR_STORE_TYPE:-faiss}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-models/embedding-001}
+      - CHAT_MODEL=${CHAT_MODEL:-gemini-1.5-flash}
+      - VECTOR_DIMENSION=${VECTOR_DIMENSION:-768}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    restart: unless-stopped
+    depends_on:
+      - pathway-server
+    networks:
+      - rag-network
+
+  pathway-server:
+    image: pathwaycom/pathway:latest
+    ports:
+      - "8754:8754"
+    environment:
+      - PATHWAY_PERSISTENT_STORAGE=./pathway_data
+    volumes:
+      - ./pathway_data:/app/pathway_data
+    restart: unless-stopped
+    networks:
+      - rag-network
+
+networks:
+  rag-network:
+    driver: bridge
+
+volumes:
+  pathway_data:
+  logs:

@@ -1,0 +1,29 @@
+# Core dependencies
+feedparser==6.0.11
+requests>=2.32.4
+python-dotenv>=1.1.1
+watchdog==4.0.2
+
+# Frontend framework
+streamlit>=1.37.0
+streamlit-option-menu>=0.3.6
+
+# AI/ML dependencies
+sentence-transformers==2.7.0
+faiss-cpu==1.12.0
+langchain>=0.2.16
+langchain-community>=0.2.16
+langchain-google-genai>=1.0.8
+google-generativeai>=0.7.2
+
+# Data processing
+pandas>=2.1.0
+numpy>=1.24.0
+
+# Async support
+asyncio-tools>=0.1.2
+aiofiles>=23.2.1
+
+# Testing
+pytest==8.3.3
+pytest-asyncio>=0.21.1
