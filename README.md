@@ -1,4 +1,3 @@
-
 # ⚡ Real-time RAG Playground ⚡
 
 *Ingest • Embed • Retrieve • Chat with your data in real-time*
