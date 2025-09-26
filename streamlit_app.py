@@ -495,7 +495,7 @@ def news_feeds_interface():
         st.info(
             "Add RSS feed URLs in the Settings page or .env file to start receiving real-time news updates."
         )
-        
+
         # Show example feeds
         with st.expander("📋 Example News Feed URLs"):
             st.markdown("""
@@ -519,10 +519,11 @@ def news_feeds_interface():
     if "rss_ingestor" not in st.session_state:
         try:
             from src.ingestion.rss_ingest import RSSIngestor
+
             st.session_state.rss_ingestor = RSSIngestor(
                 st.session_state.app.config.rss,
                 st.session_state.app.embedding_service,
-                st.session_state.app.vector_store
+                st.session_state.app.vector_store,
             )
             st.success("✅ RSS ingestor initialized")
         except Exception as e:
@@ -531,21 +532,21 @@ def news_feeds_interface():
 
     # Control panel
     col1, col2, col3 = st.columns([2, 1, 1])
-    
+
     with col1:
         st.subheader("📊 Feed Control Panel")
-    
+
     with col2:
         auto_refresh = st.checkbox("🔄 Auto Refresh", value=False)
-    
+
     with col3:
         if st.button("🔄 Refresh Now"):
             st.rerun()
 
     # Feed statistics
-    if hasattr(st.session_state, 'rss_ingestor'):
+    if hasattr(st.session_state, "rss_ingestor"):
         stats = st.session_state.rss_ingestor.stats
-        
+
         col1, col2, col3, col4 = st.columns(4)
         with col1:
             st.metric("Active Feeds", stats.get("active_feeds", 0))
@@ -562,33 +563,38 @@ def news_feeds_interface():
 
     # Tabs for different views
     tab1, tab2, tab3 = st.tabs(["📰 Live Feed", "📈 Feed Analytics", "⚙️ Feed Settings"])
-    
+
     with tab1:
         st.subheader("🔴 Live News Updates")
-        
+
         # Category filter
         categories = ["All", "General News", "Technology", "Business", "International"]
         selected_category = st.selectbox("Filter by Category:", categories)
-        
+
         # Show selected category
         if selected_category != "All":
             st.info(f"📂 Showing articles from: {selected_category}")
-        
+
         # Fetch and display recent articles
         if st.button("📥 Fetch Latest Articles", type="primary"):
             with st.spinner("Fetching latest news articles..."):
                 try:
                     # Simulate fetching articles (you'd implement actual fetching here)
                     import asyncio
+
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
-                    
+
                     # Placeholder for actual article fetching
-                    st.info("🚧 Live article fetching will be implemented. This shows the RSS feeds are configured and ready.")
-                    
+                    st.info(
+                        "🚧 Live article fetching will be implemented. This shows the RSS feeds are configured and ready."
+                    )
+
                     # Show configured feeds
                     st.write("**Configured News Sources:**")
-                    for i, feed_url in enumerate(st.session_state.app.config.rss.feeds[:10]):  # Show first 10
+                    for i, feed_url in enumerate(
+                        st.session_state.app.config.rss.feeds[:10]
+                    ):  # Show first 10
                         # Extract feed name from URL
                         if "cnn.com" in feed_url:
                             feed_name = "📺 CNN"
@@ -601,27 +607,32 @@ def news_feeds_interface():
                         elif "bloomberg.com" in feed_url:
                             feed_name = "💼 Bloomberg"
                         else:
-                            feed_name = f"📡 Feed {i+1}"
-                        
+                            feed_name = f"📡 Feed {i + 1}"
+
                         st.write(f"• {feed_name}: {feed_url}")
-                    
+
                     loop.close()
-                    
+
                 except Exception as e:
                     st.error(f"❌ Error fetching articles: {str(e)}")
 
         # Placeholder for article display
         st.markdown("---")
-        st.info("💡 Articles will appear here once fetching is implemented. The RSS system is ready to ingest from " + 
-                str(len(st.session_state.app.config.rss.feeds)) + " configured news sources.")
+        st.info(
+            "💡 Articles will appear here once fetching is implemented. The RSS system is ready to ingest from "
+            + str(len(st.session_state.app.config.rss.feeds))
+            + " configured news sources."
+        )
 
     with tab2:
         st.subheader("📈 Feed Analytics")
-        
+
         # Create sample analytics charts
-        if hasattr(st.session_state, 'rss_ingestor') and st.session_state.rss_ingestor.stats.get("articles_per_feed"):
+        if hasattr(
+            st.session_state, "rss_ingestor"
+        ) and st.session_state.rss_ingestor.stats.get("articles_per_feed"):
             import plotly.express as px
-            
+
             # Articles per feed chart
             feed_data = st.session_state.rss_ingestor.stats.get("articles_per_feed", {})
             if feed_data:
@@ -629,7 +640,7 @@ def news_feeds_interface():
                     x=list(feed_data.keys()),
                     y=list(feed_data.values()),
                     title="Articles per Feed",
-                    labels={"x": "RSS Feed", "y": "Article Count"}
+                    labels={"x": "RSS Feed", "y": "Article Count"},
                 )
                 st.plotly_chart(fig, use_container_width=True)
         else:
@@ -637,51 +648,62 @@ def news_feeds_interface():
 
     with tab3:
         st.subheader("⚙️ Feed Configuration")
-        
+
         # Display current configuration
         st.write("**Current RSS Configuration:**")
         col1, col2 = st.columns(2)
-        
+
         with col1:
             st.metric("Total Feeds", len(st.session_state.app.config.rss.feeds))
-            st.metric("Refresh Interval", f"{st.session_state.app.config.rss.refresh_interval}s")
-        
+            st.metric(
+                "Refresh Interval",
+                f"{st.session_state.app.config.rss.refresh_interval}s",
+            )
+
         with col2:
-            st.metric("Max Articles per Feed", st.session_state.app.config.rss.max_articles_per_feed)
-        
+            st.metric(
+                "Max Articles per Feed",
+                st.session_state.app.config.rss.max_articles_per_feed,
+            )
+
         # Show all configured feeds
         st.write("**All Configured Feeds:**")
         for i, feed in enumerate(st.session_state.app.config.rss.feeds):
-            with st.expander(f"Feed {i+1}: {feed[:50]}..."):
+            with st.expander(f"Feed {i + 1}: {feed[:50]}..."):
                 st.code(feed, language="text")
-                
+
                 # Test feed button
-                if st.button(f"🧪 Test Feed {i+1}", key=f"test_feed_{i}"):
-                    with st.spinner(f"Testing feed {i+1}..."):
+                if st.button(f"🧪 Test Feed {i + 1}", key=f"test_feed_{i}"):
+                    with st.spinner(f"Testing feed {i + 1}..."):
                         try:
                             import aiohttp
                             import asyncio
-                            
+
                             async def test_feed():
                                 async with aiohttp.ClientSession() as session:
-                                    async with session.get(feed, timeout=10) as response:
+                                    async with session.get(
+                                        feed, timeout=10
+                                    ) as response:
                                         return response.status
-                            
+
                             loop = asyncio.new_event_loop()
                             asyncio.set_event_loop(loop)
                             status = loop.run_until_complete(test_feed())
                             loop.close()
-                            
+
                             if status == 200:
-                                st.success(f"✅ Feed {i+1} is accessible (Status: {status})")
+                                st.success(
+                                    f"✅ Feed {i + 1} is accessible (Status: {status})"
+                                )
                             else:
-                                st.warning(f"⚠️ Feed {i+1} returned status: {status}")
+                                st.warning(f"⚠️ Feed {i + 1} returned status: {status}")
                         except Exception as e:
-                            st.error(f"❌ Feed {i+1} test failed: {str(e)}")
+                            st.error(f"❌ Feed {i + 1} test failed: {str(e)}")
 
     # Auto-refresh logic
     if auto_refresh:
         import time
+
         time.sleep(5)  # Wait 5 seconds
         st.rerun()
 

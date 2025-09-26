@@ -66,13 +66,22 @@ class RSSIngestor(LoggerMixin):
             "rss.cnn.com": {"name": "CNN", "category": "General News"},
             "feeds.bbci.co.uk": {"name": "BBC News", "category": "General News"},
             "feeds.reuters.com": {"name": "Reuters", "category": "General News"},
-            "feeds.feedburner.com/ndtvnews": {"name": "NDTV", "category": "General News"},
+            "feeds.feedburner.com/ndtvnews": {
+                "name": "NDTV",
+                "category": "General News",
+            },
             "feeds.a.dj.com": {"name": "Wall Street Journal", "category": "Business"},
             "aljazeera.com": {"name": "Al Jazeera", "category": "International"},
-            "feeds.guardian.co.uk": {"name": "The Guardian", "category": "International"},
+            "feeds.guardian.co.uk": {
+                "name": "The Guardian",
+                "category": "International",
+            },
             "feeds.npr.org": {"name": "NPR", "category": "General News"},
             "feeds.foxnews.com": {"name": "Fox News", "category": "General News"},
-            "feeds.feedburner.com/TechCrunch": {"name": "TechCrunch", "category": "Technology"},
+            "feeds.feedburner.com/TechCrunch": {
+                "name": "TechCrunch",
+                "category": "Technology",
+            },
             "feeds.bloomberg.com": {"name": "Bloomberg", "category": "Business"},
             # Add more as needed
         }
@@ -82,7 +91,7 @@ class RSSIngestor(LoggerMixin):
         for domain, info in self.feed_metadata.items():
             if domain in feed_url:
                 return info
-        
+
         # Default fallback
         return {"name": "Unknown Feed", "category": "General"}
 
@@ -148,7 +157,7 @@ class RSSIngestor(LoggerMixin):
 
                 # Get feed metadata
                 feed_info = self._get_feed_info(feed_url)
-                
+
                 # Create metadata
                 metadata = {
                     "source": "rss",
