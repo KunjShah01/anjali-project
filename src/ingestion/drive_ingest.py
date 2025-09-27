@@ -4,7 +4,6 @@ Google Drive ingestion for the Real-time RAG system.
 
 import asyncio
 import io
-import mimetypes
 from datetime import datetime
 from typing import List, Dict, Any, Optional, AsyncGenerator
 from pathlib import Path
