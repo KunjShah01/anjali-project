@@ -1,0 +1,15 @@
+Sample Text Document
+
+This is a plain text document that can be used for testing text processing functionality.
+
+It contains multiple paragraphs and various types of content:
+
+1. Regular paragraphs
+2. Numbered lists
+3. Different sentence structures
+
+The document should be long enough to generate meaningful embeddings and test retrieval capabilities.
+
+Technical terms: machine learning, natural language processing, vector databases, embeddings.
+
+This concludes the sample text document.

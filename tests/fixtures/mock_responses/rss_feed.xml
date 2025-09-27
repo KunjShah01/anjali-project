@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Test RSS Feed</title>
+    <description>A mock RSS feed for testing RSS ingestion functionality</description>
+    <link>https://example.com</link>
+    <atom:link href="https://example.com/feed.xml" rel="self" type="application/rss+xml"/>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 27 Sep 2025 12:00:00 GMT</lastBuildDate>
+    <item>
+      <title>Sample Article 1: Introduction to RAG Systems</title>
+      <description>This article provides an overview of Retrieval-Augmented Generation systems and their applications in modern AI.</description>
+      <link>https://example.com/article1</link>
+      <guid>https://example.com/article1</guid>
+      <pubDate>Mon, 27 Sep 2025 10:00:00 GMT</pubDate>
+      <author>test@example.com</author>
+      <category>AI</category>
+      <category>Machine Learning</category>
+    </item>
+    <item>
+      <title>Sample Article 2: Vector Databases Explained</title>
+      <description>An in-depth look at vector databases and how they enable efficient similarity search for high-dimensional data.</description>
+      <link>https://example.com/article2</link>
+      <guid>https://example.com/article2</guid>
+      <pubDate>Mon, 27 Sep 2025 11:00:00 GMT</pubDate>
+      <author>test@example.com</author>
+      <category>Databases</category>
+      <category>Technology</category>
+    </item>
+    <item>
+      <title>Sample Article 3: Testing Best Practices</title>
+      <description>Essential testing practices for maintaining code quality and preventing regressions in software development.</description>
+      <link>https://example.com/article3</link>
+      <guid>https://example.com/article3</guid>
+      <pubDate>Mon, 27 Sep 2025 12:00:00 GMT</pubDate>
+      <author>test@example.com</author>
+      <category>Testing</category>
+      <category>Development</category>
+    </item>
+  </channel>
+</rss>
