@@ -3,8 +3,7 @@ RSS feed ingestion for the Real-time RAG system with comprehensive news sources.
 """
 
 import asyncio
-import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List, Dict, Any, Optional, Set, AsyncGenerator
 import aiohttp
 import feedparser

@@ -2,8 +2,7 @@
 Type definitions for embeddings.
 """
 
-from typing import List, Dict, Any, Union, Protocol, runtime_checkable
-import numpy as np
+from typing import List, Dict, Any, Protocol, runtime_checkable
 
 # Type aliases
 Vector = List[float]
