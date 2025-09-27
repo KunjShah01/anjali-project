@@ -5,6 +5,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      # Use buildkit for better security and performance
+      args:
+        BUILDKIT_INLINE_CACHE: 1
     ports:
       - "8501:8501"
     environment:
@@ -16,10 +19,30 @@ services:
       - CHAT_MODEL=${CHAT_MODEL:-gemini-1.5-flash}
       - VECTOR_DIMENSION=${VECTOR_DIMENSION:-768}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      - PIP_NO_CACHE_DIR=1
+      - STREAMLIT_SERVER_MAX_UPLOAD_SIZE=10
+      - STREAMLIT_SERVER_MAX_MESSAGE_SIZE=10
+      - STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
     volumes:
-      - ./data:/app/data
-      - ./logs:/app/logs
+      - ./data:/app/data:rw
+      - ./logs:/app/logs:rw
+      - ./.env:/app/.env:ro
     restart: unless-stopped
+    # Security configurations
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     depends_on:
       - pathway-server
     networks:
@@ -31,9 +54,16 @@ services:
       - "8754:8754"
     environment:
       - PATHWAY_PERSISTENT_STORAGE=./pathway_data
+      - PYTHONUNBUFFERED=1
     volumes:
-      - ./pathway_data:/app/pathway_data
+      - ./pathway_data:/app/pathway_data:rw
     restart: unless-stopped
+    # Security configurations
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
     networks:
       - rag-network
 
