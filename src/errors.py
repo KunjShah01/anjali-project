@@ -6,6 +6,8 @@ from __future__ import annotations
 
 import time
 import functools
+import asyncio
+import inspect
 from typing import Callable, Type, Tuple, Any
 
 
@@ -40,19 +42,37 @@ def retry(
     """
 
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
-        @functools.wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
-            attempt = 0
-            while True:
-                try:
-                    return func(*args, **kwargs)
-                except exceptions as e:
-                    if attempt >= retries:
-                        raise
-                    sleep_time = backoff_factor * (2 ** attempt)
-                    time.sleep(sleep_time)
-                    attempt += 1
+        # Support both sync and async functions
+        if inspect.iscoroutinefunction(func):
+            @functools.wraps(func)
+            async def async_wrapper(*args: Any, **kwargs: Any) -> Any:
+                attempt = 0
+                while True:
+                    try:
+                        return await func(*args, **kwargs)
+                    except exceptions:
+                        if attempt >= retries:
+                            raise
+                        sleep_time = backoff_factor * (2 ** attempt)
+                        await asyncio.sleep(sleep_time)
+                        attempt += 1
 
-        return wrapper
+            return async_wrapper  # type: ignore
+
+        else:
+            @functools.wraps(func)
+            def wrapper(*args: Any, **kwargs: Any) -> Any:
+                attempt = 0
+                while True:
+                    try:
+                        return func(*args, **kwargs)
+                    except exceptions:
+                        if attempt >= retries:
+                            raise
+                        sleep_time = backoff_factor * (2 ** attempt)
+                        time.sleep(sleep_time)
+                        attempt += 1
+
+            return wrapper
 
     return decorator

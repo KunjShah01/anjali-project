@@ -3,8 +3,7 @@ RSS feed ingestion for the Real-time RAG system with comprehensive news sources.
 """
 
 import asyncio
-import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import List, Dict, Any, Optional, Set, AsyncGenerator
 import aiohttp
 import feedparser
@@ -12,6 +11,7 @@ from dataclasses import dataclass
 
 from ..config import RSSConfig
 from ..preprocessing.cleaner import DocumentProcessor, clean_rss_content
+from ..errors import TransientError, retry
 from ..utils.logger import LoggerMixin, ContextLogger
 
 
@@ -105,14 +105,29 @@ class RSSIngestor(LoggerMixin):
         Returns:
             Parsed feed data or None if failed
         """
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(feed_url, timeout=30) as response:
-                    if response.status == 200:
-                        content = await response.text()
-                        return feedparser.parse(content)
+        @retry((TransientError,), retries=2, backoff_factor=0.5)
+        async def _do_fetch(url: str) -> Optional[feedparser.FeedParserDict]:
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url, timeout=30) as response:
+                        if response.status == 200:
+                            content = await response.text()
+                            return feedparser.parse(content)
+                        # Non-200 responses are considered transient for retry
+                        raise TransientError(f"Non-200 response: {response.status}")
 
+            except aiohttp.ClientError as e:
+                # Network errors -> transient
+                raise TransientError(str(e))
+
+        try:
+            return await _do_fetch(feed_url)
+        except TransientError as e:
+            self.log_error(f"Failed to fetch RSS feed after retries: {feed_url}", error=e)
+            self.stats["errors"] += 1
+            return None
         except Exception as e:
+            # Other unexpected exceptions
             self.log_error(f"Failed to fetch RSS feed: {feed_url}", error=e)
             self.stats["errors"] += 1
             return None

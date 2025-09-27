@@ -2,10 +2,9 @@
 FAISS vector store implementation for the Real-time RAG system.
 """
 
-import pickle
 import json
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any, Optional
 import numpy as np
 import faiss
 from datetime import datetime
@@ -13,6 +12,7 @@ from datetime import datetime
 from ..config import VectorStoreConfig
 from ..embeddings.typing import Vector, Document, SimilarityResult
 from ..utils.logger import LoggerMixin
+from ..errors import VectorStoreError, TransientError, retry
 
 
 class FAISSVectorStore(LoggerMixin):
@@ -88,7 +88,8 @@ class FAISSVectorStore(LoggerMixin):
         Returns:
             Document ID
         """
-        try:
+        @retry((TransientError,), retries=2, backoff_factor=0.5)
+        async def _do_add() -> str:
             # Generate document ID
             doc_id = metadata.get("id", f"doc_{len(self.documents)}")
 
@@ -119,13 +120,18 @@ class FAISSVectorStore(LoggerMixin):
             self.stats["total_documents"] = len(self.documents)
             self.stats["index_size"] = self.index.ntotal
 
-            self.log_debug(f"Added document to vector store", doc_id=doc_id)
+            self.log_debug("Added document to vector store", doc_id=doc_id)
 
             return doc_id
 
+        try:
+            return await _do_add()
+        except TransientError as e:
+            self.log_error("Transient error adding document to vector store", error=e)
+            raise VectorStoreError(str(e))
         except Exception as e:
             self.log_error("Error adding document to vector store", error=e)
-            raise
+            raise VectorStoreError(str(e))
 
     async def add_documents(self, documents: List[Dict[str, Any]]) -> List[str]:
         """
@@ -139,7 +145,8 @@ class FAISSVectorStore(LoggerMixin):
         """
         doc_ids = []
 
-        try:
+        @retry((TransientError,), retries=2, backoff_factor=0.5)
+        async def _do_add_batch() -> List[str]:
             # Prepare batch data
             embeddings = []
             doc_objects = []
@@ -192,9 +199,14 @@ class FAISSVectorStore(LoggerMixin):
 
             return doc_ids
 
+        try:
+            return await _do_add_batch()
+        except TransientError as e:
+            self.log_error("Transient error adding documents to vector store", error=e)
+            raise VectorStoreError(str(e))
         except Exception as e:
             self.log_error("Error adding documents to vector store", error=e)
-            raise
+            raise VectorStoreError(str(e))
 
     async def similarity_search(
         self, query_embedding: Vector, k: int = 5, threshold: float = 0.0
@@ -240,7 +252,7 @@ class FAISSVectorStore(LoggerMixin):
             self.stats["searches_performed"] += 1
 
             self.log_debug(
-                f"Similarity search completed",
+                "Similarity search completed",
                 results_count=len(results),
                 search_k=search_k,
             )
@@ -249,6 +261,7 @@ class FAISSVectorStore(LoggerMixin):
 
         except Exception as e:
             self.log_error("Error performing similarity search", error=e)
+            # Map to typed error if needed by callers; here we return empty results
             return []
 
     async def get_document(self, doc_id: str) -> Optional[Document]:
@@ -309,7 +322,8 @@ class FAISSVectorStore(LoggerMixin):
 
     async def _rebuild_index(self):
         """Rebuild FAISS index from current documents."""
-        try:
+        @retry((TransientError,), retries=2, backoff_factor=0.5)
+        async def _do_rebuild():
             self._create_new_index()
 
             if self.documents:
@@ -323,9 +337,14 @@ class FAISSVectorStore(LoggerMixin):
 
             self.log_info("Rebuilt FAISS index", documents=len(self.documents))
 
+        try:
+            return await _do_rebuild()
+        except TransientError as e:
+            self.log_error("Transient error rebuilding index", error=e)
+            raise VectorStoreError(str(e))
         except Exception as e:
             self.log_error("Error rebuilding index", error=e)
-            raise
+            raise VectorStoreError(str(e))
 
     def save_index(self):
         """Save FAISS index and metadata to disk."""
@@ -349,6 +368,8 @@ class FAISSVectorStore(LoggerMixin):
 
         except Exception as e:
             self.log_error("Error saving FAISS index", error=e)
+            # Do not raise - saving should not crash the application
+            return
 
     def load_index(self):
         """Load FAISS index and metadata from disk."""
@@ -375,7 +396,7 @@ class FAISSVectorStore(LoggerMixin):
 
         except Exception as e:
             self.log_error("Error loading FAISS index", error=e)
-            raise
+            raise VectorStoreError(str(e))
 
     async def get_stats(self) -> Dict[str, Any]:
         """Get vector store statistics."""
@@ -391,7 +412,7 @@ class FAISSVectorStore(LoggerMixin):
         try:
             if self.index is not None:
                 self.save_index()
-        except:
+        except Exception:
             pass
 
 
